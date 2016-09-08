@@ -133,11 +133,6 @@ public class ToDoDatabaseTest {
 
 //        int id = results.getInt("id");
 
-        // This way still gave me an error
-//        int id = 0;
-//        while (results.next()) {
-//            id = results.getInt("id");
-//        }
 
         ArrayList<ToDoItem> holdAllToDos = todoDatabase.selectToDos(conn);
         boolean beforeIsDone = holdAllToDos.get(0).isDone;

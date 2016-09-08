@@ -98,9 +98,15 @@ public class Controller implements Initializable {
     }
 
     public void removeItem() {
-        ToDoItem todoItem = (ToDoItem)todoList.getSelectionModel().getSelectedItem();
-        System.out.println("Removing " + todoItem.text + " ...");
-        todoItems.remove(todoItem);
+        try {
+            ToDoItem todoItem = (ToDoItem) todoList.getSelectionModel().getSelectedItem();
+            System.out.println("Removing " + todoItem.text + " ...");
+            todoItems.remove(todoItem);
+            myToDoDatabase.deleteToDo(conn, todoItem.getText());
+        } catch (SQLException ex) {
+            System.out.println("Exception caught when deleting from database");
+            ex.printStackTrace();
+        }
     }
 
     public void toggleItem() {
