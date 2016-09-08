@@ -13,6 +13,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ResourceBundle;
@@ -34,23 +37,39 @@ public class Controller implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
-        System.out.print("Please enter your name: ");
-        Scanner inputScanner = new Scanner(System.in);
-        username = inputScanner.nextLine();
+//        System.out.print("Please enter your name: ");
+//        Scanner inputScanner = new Scanner(System.in);
+//        username = inputScanner.nextLine();
+//
+//        if (username != null && !username.isEmpty()) {
+//            fileName = username + ".json";
+//        }
+//
+//        System.out.println("Checking existing list ...");
+//        ToDoItemList retrievedList = retrieveList();
+//        if (retrievedList != null) {
+//            for (ToDoItem item : retrievedList.todoItems) {
+//                todoItems.add(item);
+//            }
+//        }
+//
+//        todoList.setItems(todoItems);
 
-        if (username != null && !username.isEmpty()) {
-            fileName = username + ".json";
-        }
-
-        System.out.println("Checking existing list ...");
-        ToDoItemList retrievedList = retrieveList();
-        if (retrievedList != null) {
-            for (ToDoItem item : retrievedList.todoItems) {
+        try {
+            ToDoDatabase myToDoDatabase = new ToDoDatabase();
+            Connection conn = DriverManager.getConnection(ToDoDatabase.DB_URL);
+            myToDoDatabase.init();
+            ArrayList<ToDoItem> toDoItemsFromDB = myToDoDatabase.selectToDos(conn);
+            for (ToDoItem item : toDoItemsFromDB) {
+                System.out.println(item.toString());
                 todoItems.add(item);
             }
-        }
+            todoList.setItems(todoItems);
 
-        todoList.setItems(todoItems);
+        } catch (SQLException ex) {
+            System.out.println("Caught exception calling init method");
+            ex.printStackTrace();
+        }
     }
 
     public void saveToDoList() {

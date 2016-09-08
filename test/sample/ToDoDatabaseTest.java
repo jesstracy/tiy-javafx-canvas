@@ -71,7 +71,7 @@ public class ToDoDatabaseTest {
         todoDatabase.insertToDo(conn, todoText);
 
         // make sure we can retrieve the to do we just created
-        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM todos where text = ?");
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM todos WHERE text = ?");
         stmt.setString(1, todoText);
         ResultSet results = stmt.executeQuery();
         assertNotNull(results);
@@ -116,6 +116,53 @@ public class ToDoDatabaseTest {
 
         todoDatabase.deleteToDo(conn, firstToDoText);
         todoDatabase.deleteToDo(conn, secondToDoText);
+    }
+
+    // doesn't work
+    @Test
+    public void testToggleToDo() throws Exception {
+        Connection conn = DriverManager.getConnection(ToDoDatabase.DB_URL);
+        String toDoText = "UnitTest-ToDo-1";
+
+        todoDatabase.insertToDo(conn, toDoText);
+
+        // This gave me an error saying "No data is available" at the id = results.getInt("id") line
+//        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM todos WHERE text = ?");
+//        stmt.setString(1, toDoText);
+//        ResultSet results = stmt.executeQuery();
+
+//        int id = results.getInt("id");
+
+        // This way still gave me an error
+//        int id = 0;
+//        while (results.next()) {
+//            id = results.getInt("id");
+//        }
+
+        ArrayList<ToDoItem> holdAllToDos = todoDatabase.selectToDos(conn);
+        boolean beforeIsDone = holdAllToDos.get(0).isDone;
+        int id = holdAllToDos.get(0).id;
+
+        todoDatabase.toggleToDo(conn, id);
+
+        holdAllToDos = todoDatabase.selectToDos(conn);
+        boolean afterIsDone = holdAllToDos.get(0).isDone;
+
+
+//        PreparedStatement stmt2 = conn.prepareStatement("SELECT * FROM todos WHERE id = ?");
+//        stmt2.setInt(1, id);
+//        ResultSet results2 = stmt2.executeQuery();
+//        boolean is_done = results2.getBoolean("is_done");
+//        assertFalse(is_done);
+
+
+        assertFalse(beforeIsDone == afterIsDone);
+
+        todoDatabase.deleteToDo(conn, toDoText);
+
+        holdAllToDos = todoDatabase.selectToDos(conn);
+        System.out.println("Size should be zero: " + holdAllToDos.size());
+
     }
 
 
