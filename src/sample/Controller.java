@@ -13,9 +13,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ResourceBundle;
@@ -31,6 +29,9 @@ public class Controller implements Initializable {
     ObservableList<ToDoItem> todoItems = FXCollections.observableArrayList();
     ArrayList<ToDoItem> savableList = new ArrayList<ToDoItem>();
     String fileName = "todos.json";
+
+    ToDoDatabase myToDoDatabase;
+    Connection conn;
 
     public String username;
 
@@ -56,8 +57,8 @@ public class Controller implements Initializable {
 //        todoList.setItems(todoItems);
 
         try {
-            ToDoDatabase myToDoDatabase = new ToDoDatabase();
-            Connection conn = DriverManager.getConnection(ToDoDatabase.DB_URL);
+            myToDoDatabase = new ToDoDatabase();
+            conn = DriverManager.getConnection(ToDoDatabase.DB_URL);
             myToDoDatabase.init();
             ArrayList<ToDoItem> toDoItemsFromDB = myToDoDatabase.selectToDos(conn);
             for (ToDoItem item : toDoItemsFromDB) {
@@ -84,9 +85,16 @@ public class Controller implements Initializable {
     }
 
     public void addItem() {
-        System.out.println("Adding item ...");
-        todoItems.add(new ToDoItem(todoText.getText()));
-        todoText.setText("");
+        try {
+            System.out.println("Adding item ...");
+            todoItems.add(new ToDoItem(todoText.getText()));
+            myToDoDatabase.insertToDo(conn, todoText.getText());
+            todoText.setText("");
+        } catch (SQLException ex) {
+            System.out.println("Exception caught inserting toDo");
+            ex.printStackTrace();
+        }
+
     }
 
     public void removeItem() {
@@ -96,12 +104,29 @@ public class Controller implements Initializable {
     }
 
     public void toggleItem() {
-        System.out.println("Toggling item ...");
-        ToDoItem todoItem = (ToDoItem)todoList.getSelectionModel().getSelectedItem();
-        if (todoItem != null) {
-            todoItem.isDone = !todoItem.isDone;
-            todoList.setItems(null);
-            todoList.setItems(todoItems);
+        try {
+            System.out.println("Toggling item ...");
+            ToDoItem todoItem = (ToDoItem) todoList.getSelectionModel().getSelectedItem();
+            if (todoItem != null) {
+                todoItem.isDone = !todoItem.isDone;
+                String textString = todoItem.getText();
+                PreparedStatement stmt = conn.prepareStatement("SELECT * FROM todos WHERE text = ?");
+                stmt.setString(1, textString);
+                ResultSet results = stmt.executeQuery();
+                results.next();
+                int id = results.getInt("id");
+//                System.out.println("Text from database: " + results.getString("text"));
+//                System.out.println("ID from database: " + id);
+
+
+                myToDoDatabase.toggleToDo(conn, id);
+
+                todoList.setItems(null);
+                todoList.setItems(todoItems);
+            }
+        } catch (SQLException ex) {
+            System.out.println("Exception caught when making prepared statement");
+            ex.printStackTrace();
         }
     }
 

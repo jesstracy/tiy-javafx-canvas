@@ -33,4 +33,12 @@ public class ToDoItem {
         // A one-line version of the logic above:
         // return text + (isDone ? " (done)" : "");
     }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
 }
