@@ -56,6 +56,10 @@ public class Controller implements Initializable {
 //
 //        todoList.setItems(todoItems);
 
+        Scanner myScanner = new Scanner(System.in);
+        System.out.println("Please enter your email to retrieve your todos, or enter \"0\" to create a new user.");
+        String userInput = myScanner.nextLine();
+
         try {
             myToDoDatabase = new ToDoDatabase();
             conn = DriverManager.getConnection(ToDoDatabase.DB_URL);
@@ -84,16 +88,22 @@ public class Controller implements Initializable {
         }
     }
 
+//    public void setUsername() {
+//        System.out.println("Now setting username!!");
+//        set the text to empty??
+//    }
+
     public void addItem() {
-        try {
+//        try {
             System.out.println("Adding item ...");
             todoItems.add(new ToDoItem(todoText.getText()));
-            myToDoDatabase.insertToDo(conn, todoText.getText());
+            //need to fix insertToDoParameters
+//            myToDoDatabase.insertToDo(conn, todoText.getText());
             todoText.setText("");
-        } catch (SQLException ex) {
-            System.out.println("Exception caught inserting toDo");
-            ex.printStackTrace();
-        }
+//        } catch (SQLException ex) {
+//            System.out.println("Exception caught inserting toDo");
+//            ex.printStackTrace();
+//        }
 
     }
 
