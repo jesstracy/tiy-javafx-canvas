@@ -104,6 +104,41 @@ public class ToDoDatabase {
         }
     }
 
+    public ArrayList<User> getAllUsers(Connection conn) throws SQLException {
+        ArrayList<User> allUsers = new ArrayList<User>();
+
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM users");
+        ResultSet results = stmt.executeQuery();
+        String username;
+        String fullName;
+        int id;
+        User userToAdd;
+        while (results.next()) {
+            username = results.getString("username");
+            fullName = results.getString("fullname");
+            id = results.getInt("id");
+            userToAdd = new User(username, fullName, id);
+
+            allUsers.add(userToAdd);
+        }
+        return allUsers;
+    }
+
+    public String getUserNameByID(Connection conn, int id) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM users WHERE id = ?");
+        stmt.setInt(1, id);
+        ResultSet results = stmt.executeQuery();
+        if (results != null) {
+            results.next();
+            String username = results.getString("username");
+
+            return username;
+        } else {
+            return null;
+        }
+    }
+
+
     public ArrayList<ToDoItem> selectToDosForUser(Connection conn, int userID) throws SQLException {
         ArrayList<ToDoItem> items = new ArrayList<>();
         PreparedStatement stmt = conn.prepareStatement("SELECT * FROM todos " +

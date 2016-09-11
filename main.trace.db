@@ -627,3 +627,10 @@ org.h2.message.DbException: The connection was not closed by the application and
 Caused by: org.h2.jdbc.JdbcSQLException: The connection was not closed by the application and is garbage collected [90018-191]
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:345)
 	... 14 more
+2016-09-11 17:30:49 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "SELECT FROM USERS WHERE[*] ID = ? "; expected "., (, AS, RIGHT, LEFT, FULL, INNER, JOIN, CROSS, NATURAL, ,, SELECT"; SQL statement:
+SELECT FROM users WHERE id = ? [42001-191]
+2016-09-11 17:44:59 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: No data is available [2000-191]
+2016-09-11 17:48:44 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: No data is available [2000-191]

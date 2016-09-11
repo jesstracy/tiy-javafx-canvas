@@ -33,7 +33,6 @@ public class Controller implements Initializable {
     ToDoDatabase myToDoDatabase;
     Connection conn;
 
-    public String username;
 
     User currentUser;
 //    ArrayList<ToDoItem> currentUsersToDos;
@@ -58,7 +57,63 @@ public class Controller implements Initializable {
 //        }
 //
 //        todoList.setItems(todoItems);
+        Scanner myScanner = new Scanner(System.in);
+        String username;
+        String fullname;
+        try {
+            myToDoDatabase = new ToDoDatabase();
+            conn = DriverManager.getConnection(ToDoDatabase.DB_URL);
+            myToDoDatabase.init();
+            boolean keepLooping = true;
 
+            if (myToDoDatabase.getNumberOfUsers(conn) == 0) {
+                currentUser = enterNewUser(myScanner);
+            } else {
+                while (keepLooping) {
+                    System.out.println("Please enter your userID, or enter \"0\" to create a new user.");
+                    System.out.println("USER ID\t\tUSERNAME\t\t\t\tFULL NAME");
+                    ArrayList<Integer> userIdHolder = new ArrayList<Integer>();
+                    for (User user : myToDoDatabase.getAllUsers(conn)) {
+                        userIdHolder.add(user.id);
+                        System.out.println("   " + user.id + "\t\t" + user.username + "\t\t\t" + user.fullname);
+                    }
+                    System.out.println("   0" + "\t\tNew User");
+                    int userSelection = myScanner.nextInt();
+                    myScanner.nextLine();
+
+                    if (userSelection == 0) {
+                        // Create a new user
+                        currentUser = enterNewUser(myScanner);
+                        keepLooping = false;
+                    } else {
+                        boolean userIsInDB = false;
+                        for (int id : userIdHolder) {
+                            if (userSelection == id) {
+                                userIsInDB = true;
+                            }
+                        }
+                        if (userIsInDB) {
+                            username = myToDoDatabase.getUserNameByID(conn, userSelection);
+                            currentUser = myToDoDatabase.selectUser(conn, username);
+                            keepLooping = false;
+                        } else {
+                            System.out.println("Sorry, that user does not exist in the database.");
+                        }
+                    }
+                }
+
+                // get the current user's todoitems if they have any
+                ArrayList<ToDoItem> toDoItemsFromDB = myToDoDatabase.selectToDosForUser(conn, currentUser.id);
+                for (ToDoItem item : toDoItemsFromDB) {
+//                System.out.println(item.toString());
+                    todoItems.add(item);
+                }
+                todoList.setItems(todoItems);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+/*
         try {
             myToDoDatabase = new ToDoDatabase();
             conn = DriverManager.getConnection(ToDoDatabase.DB_URL);
@@ -121,6 +176,19 @@ public class Controller implements Initializable {
             System.out.println("Caught exception selecting todos for user.");
             ex.printStackTrace();
         }
+*/
+    }
+
+    public User enterNewUser(Scanner myScanner) throws SQLException {
+        System.out.print("New user! What is your email? ");
+        String username = myScanner.nextLine();
+        System.out.print("What is your full name? ");
+        String fullname = myScanner.nextLine();
+
+        int userId = myToDoDatabase.insertUser(conn, username, fullname);
+
+        currentUser = new User(username, fullname, userId);
+        return currentUser;
     }
 
     public void saveToDoList() {
@@ -178,8 +246,8 @@ public class Controller implements Initializable {
             if (todoItem != null) {
                 todoItem.isDone = !todoItem.isDone;
                 String textString = todoItem.getText();
-                System.out.println("TOGGLING ITEM IN DB");
-                System.out.println(todoItem.id);
+//                System.out.println("TOGGLING ITEM IN DB");
+//                System.out.println(todoItem.id);
                 myToDoDatabase.toggleToDo(conn, todoItem.id);
 
 
