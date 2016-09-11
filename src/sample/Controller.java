@@ -144,12 +144,14 @@ public class Controller implements Initializable {
             System.out.println("Adding item ...");
 //            todoItems.add(new ToDoItem(todoText.getText()));
 
-            myToDoDatabase.insertToDo(conn, todoText.getText(), currentUser.id);
+            int id = myToDoDatabase.insertToDo(conn, todoText.getText(), currentUser.id);
 
-            ToDoItem newToDoItem = new ToDoItem(todoText.getText());
+            ToDoItem newToDoItem = new ToDoItem(id, todoText.getText());
             todoItems.add(newToDoItem);
 
             todoText.setText("");
+
+//            todoList.setItems(todoItems);
         } catch (SQLException ex) {
             System.out.println("Exception caught inserting toDo");
             ex.printStackTrace();
@@ -176,6 +178,8 @@ public class Controller implements Initializable {
             if (todoItem != null) {
                 todoItem.isDone = !todoItem.isDone;
                 String textString = todoItem.getText();
+                System.out.println("TOGGLING ITEM IN DB");
+                System.out.println(todoItem.id);
                 myToDoDatabase.toggleToDo(conn, todoItem.id);
 
 

@@ -22,19 +22,19 @@ public class ToDoDatabase {
 
     //Adds a new to do
     // made this also return the id!!!
-    public void insertToDo(Connection conn, String text, int userID) throws SQLException {
+    public int insertToDo(Connection conn, String text, int userID) throws SQLException {
         PreparedStatement stmt = conn.prepareStatement("INSERT INTO todos VALUES (NULL, ?, false, ?)");
         stmt.setString(1, text);
         stmt.setInt(2, userID);
         stmt.execute();
 
-//        PreparedStatement stmt2 = conn.prepareStatement("SELECT * FROM todos WHERE text = ? AND user_id = ?");
-//        stmt2.setString(1, text);
-//        stmt2.setInt(2, userID);
-//        ResultSet results = stmt2.executeQuery();
-//        results.next();
-//        int id = results.getInt("id");
-//        return id;
+        PreparedStatement stmt2 = conn.prepareStatement("SELECT * FROM todos WHERE text = ? AND user_id = ?");
+        stmt2.setString(1, text);
+        stmt2.setInt(2, userID);
+        ResultSet results = stmt2.executeQuery();
+        results.next();
+        int id = results.getInt("id");
+        return id;
     }
 
     //delete a specific to do
