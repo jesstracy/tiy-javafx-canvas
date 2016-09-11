@@ -88,7 +88,7 @@ public class ToDoDatabaseTest {
 
         assertEquals(1, numResults);
 
-        todoDatabase.deleteToDo(conn, todoText);
+        todoDatabase.deleteToDo(conn, todoText, userID);
         // make sure we remove the test user we added earlier
         todoDatabase.deleteUser(conn, username);
 
@@ -163,8 +163,8 @@ public class ToDoDatabaseTest {
                 todos.size() + ")", todos.size() >= todosBefore + 2);
         // not just = because other people could be adding to it at the same time!
 
-        todoDatabase.deleteToDo(conn, firstToDoText);
-        todoDatabase.deleteToDo(conn, secondToDoText);
+        todoDatabase.deleteToDo(conn, firstToDoText, userID);
+        todoDatabase.deleteToDo(conn, secondToDoText, userID);
 
         todoDatabase.deleteUser(conn, username);
     }
@@ -211,7 +211,7 @@ public class ToDoDatabaseTest {
 
         assertFalse(beforeIsDone == afterIsDone);
 
-        todoDatabase.deleteToDo(conn, toDoText);
+        todoDatabase.deleteToDo(conn, toDoText, userID);
 
         holdAllToDos = todoDatabase.selectToDos(conn);
         System.out.println("Size should be zero: " + holdAllToDos.size());
@@ -252,8 +252,8 @@ public class ToDoDatabaseTest {
         ToDoItem todoUser2 = todosUser2.get(0);
         assertEquals(todoText2, todoUser2.text);
 
-        todoDatabase.deleteToDo(conn, todoText);
-        todoDatabase.deleteToDo(conn, todoText2);
+        todoDatabase.deleteToDo(conn, todoText, userID);
+        todoDatabase.deleteToDo(conn, todoText2, userID2);
         // make sure we remove the test user we added earlier
         todoDatabase.deleteUser(conn, username);
         todoDatabase.deleteUser(conn, username2);
@@ -280,6 +280,34 @@ public class ToDoDatabaseTest {
         assertEquals(myTestUser.username, username);
 
         todoDatabase.deleteUser(conn, username);
+    }
+
+    @Test
+    public void testGetNumberOfUsers() throws Exception {
+        Connection conn = DriverManager.getConnection(ToDoDatabase.DB_URL);
+
+        int numUsersBefore = todoDatabase.getNumberOfUsers(conn);
+//        assertEquals(0, numUsersBefore);
+
+        String username = "User-user-1";
+        String fullname = "User-fullname";
+
+        todoDatabase.insertUser(conn, username, fullname);
+
+        int numUsersAfter = todoDatabase.getNumberOfUsers(conn);
+//        assertEquals(1, numUsersAfter);
+
+        String username2 = "User-2--user";
+        String fullname2 = "User-fullname2";
+
+        todoDatabase.insertUser(conn, username2, fullname2);
+
+        int numUsersAfter2 = todoDatabase.getNumberOfUsers(conn);
+//        assertEquals(2, numUsersAfter2);
+
+        todoDatabase.deleteUser(conn, username);
+        todoDatabase.deleteUser(conn, username2);
+
     }
 
 

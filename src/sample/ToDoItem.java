@@ -7,6 +7,7 @@ public class ToDoItem {
     public String text;
     public boolean isDone;
     public int id;
+//    public int userID;
 
 
     public ToDoItem() {
@@ -16,6 +17,19 @@ public class ToDoItem {
         this.text = text;
         this.isDone = false;
     }
+
+    public ToDoItem(int id, String text) {
+        this.id = id;
+        this.text = text;
+        this.isDone = false;
+    }
+
+//    public ToDoItem(int id, String text, int userID) {
+//        this.id = id;
+//        this.text = text;
+//        this.userID = userID;
+//        this.isDone = false;
+//    }
 
     public ToDoItem(int id, String text, boolean isDone) {
         this.id = id;

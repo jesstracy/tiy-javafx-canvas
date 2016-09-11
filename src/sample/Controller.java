@@ -35,6 +35,9 @@ public class Controller implements Initializable {
 
     public String username;
 
+    User currentUser;
+//    ArrayList<ToDoItem> currentUsersToDos;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
@@ -56,23 +59,66 @@ public class Controller implements Initializable {
 //
 //        todoList.setItems(todoItems);
 
-        Scanner myScanner = new Scanner(System.in);
-        System.out.println("Please enter your email to retrieve your todos, or enter \"0\" to create a new user.");
-        String userInput = myScanner.nextLine();
-
         try {
             myToDoDatabase = new ToDoDatabase();
             conn = DriverManager.getConnection(ToDoDatabase.DB_URL);
             myToDoDatabase.init();
-            ArrayList<ToDoItem> toDoItemsFromDB = myToDoDatabase.selectToDos(conn);
+        } catch (SQLException ex) {
+            System.out.println("Exception caught getting connection or initializing database.");
+            ex.printStackTrace();
+        }
+
+        Scanner myScanner = new Scanner(System.in);
+
+        boolean keepLooping = true;
+        while (keepLooping) {
+            System.out.println("Please enter your email to retrieve your todos, or enter \"0\" to create a new user.");
+            String username = myScanner.nextLine();
+            String fullname;
+            if (username.equals("0")) {
+                // Make a new user
+                // get username, fullname, add to DB, get id, and then create new user.
+                // ACTUALLY, I WILL CREATE THE USER AFTER THE IF/ELSE BC IT WILL DO THE SAME THING EITHER WAY, VARIABLES CALLED THE SAME THING
+                System.out.print("New user! What is your email? ");
+                username = myScanner.nextLine();
+                System.out.print("What is your full name? ");
+                fullname = myScanner.nextLine();
+
+                try {
+                    myToDoDatabase.insertUser(conn, username, fullname);
+                } catch (SQLException ex) {
+                    System.out.println("Exception caught inserting user to DB.");
+                    ex.printStackTrace();
+                }
+            }
+            try {
+                if (myToDoDatabase.getNumberOfUsers(conn) == 0) {
+                    System.out.println("There are no records for this user! (No users in DB)");
+                } else {
+                    currentUser = myToDoDatabase.selectUser(conn, username);
+                    if (currentUser == null) {
+                        System.out.println("There are no records for this user!");
+                    } else {
+                        keepLooping = false;
+                    }
+                }
+            } catch (SQLException ex) {
+                System.out.println("Exception caught selecting user from db.");
+                ex.printStackTrace();
+            }
+        }
+
+        // Get the current user's todos (if they have any)
+        try {
+            ArrayList<ToDoItem> toDoItemsFromDB = myToDoDatabase.selectToDosForUser(conn, currentUser.id);
             for (ToDoItem item : toDoItemsFromDB) {
-                System.out.println(item.toString());
+//                System.out.println(item.toString());
                 todoItems.add(item);
             }
             todoList.setItems(todoItems);
 
         } catch (SQLException ex) {
-            System.out.println("Caught exception calling init method");
+            System.out.println("Caught exception selecting todos for user.");
             ex.printStackTrace();
         }
     }
@@ -94,16 +140,20 @@ public class Controller implements Initializable {
 //    }
 
     public void addItem() {
-//        try {
+        try {
             System.out.println("Adding item ...");
-            todoItems.add(new ToDoItem(todoText.getText()));
-            //need to fix insertToDoParameters
-//            myToDoDatabase.insertToDo(conn, todoText.getText());
+//            todoItems.add(new ToDoItem(todoText.getText()));
+
+            myToDoDatabase.insertToDo(conn, todoText.getText(), currentUser.id);
+
+            ToDoItem newToDoItem = new ToDoItem(todoText.getText());
+            todoItems.add(newToDoItem);
+
             todoText.setText("");
-//        } catch (SQLException ex) {
-//            System.out.println("Exception caught inserting toDo");
-//            ex.printStackTrace();
-//        }
+        } catch (SQLException ex) {
+            System.out.println("Exception caught inserting toDo");
+            ex.printStackTrace();
+        }
 
     }
 
@@ -112,7 +162,7 @@ public class Controller implements Initializable {
             ToDoItem todoItem = (ToDoItem) todoList.getSelectionModel().getSelectedItem();
             System.out.println("Removing " + todoItem.text + " ...");
             todoItems.remove(todoItem);
-            myToDoDatabase.deleteToDo(conn, todoItem.getText());
+            myToDoDatabase.deleteToDo(conn, todoItem.getText(), currentUser.id);
         } catch (SQLException ex) {
             System.out.println("Exception caught when deleting from database");
             ex.printStackTrace();
@@ -126,16 +176,8 @@ public class Controller implements Initializable {
             if (todoItem != null) {
                 todoItem.isDone = !todoItem.isDone;
                 String textString = todoItem.getText();
-                PreparedStatement stmt = conn.prepareStatement("SELECT * FROM todos WHERE text = ?");
-                stmt.setString(1, textString);
-                ResultSet results = stmt.executeQuery();
-                results.next();
-                int id = results.getInt("id");
-//                System.out.println("Text from database: " + results.getString("text"));
-//                System.out.println("ID from database: " + id);
+                myToDoDatabase.toggleToDo(conn, todoItem.id);
 
-
-                myToDoDatabase.toggleToDo(conn, id);
 
                 todoList.setItems(null);
                 todoList.setItems(todoItems);

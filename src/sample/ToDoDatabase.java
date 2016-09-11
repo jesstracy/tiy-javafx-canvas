@@ -21,17 +21,27 @@ public class ToDoDatabase {
     }
 
     //Adds a new to do
+    // made this also return the id!!!
     public void insertToDo(Connection conn, String text, int userID) throws SQLException {
         PreparedStatement stmt = conn.prepareStatement("INSERT INTO todos VALUES (NULL, ?, false, ?)");
         stmt.setString(1, text);
         stmt.setInt(2, userID);
         stmt.execute();
+
+//        PreparedStatement stmt2 = conn.prepareStatement("SELECT * FROM todos WHERE text = ? AND user_id = ?");
+//        stmt2.setString(1, text);
+//        stmt2.setInt(2, userID);
+//        ResultSet results = stmt2.executeQuery();
+//        results.next();
+//        int id = results.getInt("id");
+//        return id;
     }
 
     //delete a specific to do
-    public void deleteToDo(Connection conn, String text) throws SQLException {
-        PreparedStatement stmt = conn.prepareStatement("DELETE FROM todos WHERE text = ?");
+    public void deleteToDo(Connection conn, String text, int userID) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement("DELETE FROM todos WHERE text = ? AND user_id = ?");
         stmt.setString(1, text);
+        stmt.setInt(2, userID);
         stmt.execute();
     }
 
@@ -109,6 +119,17 @@ public class ToDoDatabase {
             items.add(new ToDoItem(id, text, isDone));
         }
         return items;
+    }
+
+    public int getNumberOfUsers(Connection conn) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM users");
+        ResultSet results = stmt.executeQuery();
+        int numUsers = 0;
+        while (results.next()) {
+            numUsers++;
+        }
+        return numUsers;
+//        return -1;
     }
 
 }
